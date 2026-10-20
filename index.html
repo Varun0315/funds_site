@@ -1,0 +1,196 @@
+<!DOCTYPE html>
+<html lang="mr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Mauli angh </title>
+<style>
+body{margin:0;font-family:Arial;background:#fff8e1}
+header{background:#c62828;color:#fff;padding:14px;text-align:center}
+.container{max-width:1100px;margin:auto;padding:10px}
+.card{background:#fff;padding:12px;border-radius:14px;box-shadow:0 4px 10px rgba(0,0,0,.2);margin:10px 0;overflow-x:auto}
+table{width:100%;border-collapse:collapse;font-size:11px}
+th{background:#c62828;color:#fff;padding:6px}
+td{border:1px solid #ddd;padding:5px;text-align:center}
+.total{background:#ffecb3 !important;font-weight:bold}
+.paid{background:#c8e6c9}.unpaid{background:#ffcdd2}
+.box{display:grid;grid-template-columns:1fr 1fr 1fr;gap:8px;margin:10px 0}
+.box div{padding:12px;border-radius:12px;color:#fff;font-weight:bold;text-align:center}
+.green{background:#2e7d32}.red{background:#c62828}.blue{background:#1565c0}
+.btn{padding:8px 12px;border:none;border-radius:8px;font-weight:bold;color:#fff;cursor:pointer;margin:3px;font-size:11px}
+.btn-green{background:#2e7d32}.btn-red{background:#c62828}.btn-blue{background:#1565c0}.btn-whatsapp{background:#25D366}
+.admin{background:#fff3cd;border:2px solid #c62828;padding:12px;border-radius:12px}
+input{padding:8px;border-radius:6px;border:1px solid #999;font-size:12px}
+.kad-input{width:80px;background:#ffebee;border:2px solid #c62828;font-weight:bold;color:red;text-align:center;font-size:14px}
+.save-btn{background:#2e7d32;color:#fff;padding:8px 12px;border:none;border-radius:6px;font-weight:bold;cursor:pointer;margin-left:4px}
+.save-btn:active{transform:scale(0.95)}
+.kad-card{background:#fff;padding:10px;border-radius:10px;border:2px solid #ccc;margin:5px 0;display:flex;justify-content:space-between;align-items:center;flex-wrap:wrap}
+.linkBox{background:#e8f5e9;border:2px dashed #2e7d32;padding:10px;border-radius:10px;margin-top:10px;word-break:break-all;font-size:11px;display:none}
+</style>
+</head>
+<body>
+<header>
+<h1>🙏 माऊली संघ 🙏</h1>
+<p id="head"></p>
+</header>
+<div class="container">
+
+<div class="card">
+<h3>💰 Total Amount</h3>
+<table id="mainTbl"></table>
+<div class="box">
+<div class="blue" id="bJama"></div>
+<div class="red" id="bKad"></div>
+<div class="green" id="bShillak"></div>
+</div>
+</div>
+
+<div class="card">
+<h3>📅 sunday - who paid</h3>
+<table id="weekTbl"></table>
+<p style="font-size:10px;text-align:center;color:#666">✅ Tick = ₹50 Add | ❌ Untick = Add Nahi</p>
+</div>
+
+<div class="admin">
+<h3>🔧 Admin - Kadhalela Amount Ghalaycha + Save Button</h3>
+Password <b>1234</b> <input id="pass" type="password" placeholder="Password">
+<button class="btn btn-blue" onclick="unlock()">Unlock</button>
+
+<div id="adminControls" style="display:none;margin-top:12px">
+<hr>
+<b>Pratyekacha Kadhalela Amount Taka Ani Save Daba:</b>
+<div id="kadInputs" style="margin:10px 0"></div>
+
+<hr>
+<button class="btn btn-green" onclick="addRavivar()">➕ Pudhcha Ravivar Add</button>
+<button class="btn btn-blue" onclick="saveAll()">💾 Sagle Save Kara</button>
+<button class="btn btn-whatsapp" onclick="generateLink()">🔗 Link Generate - Saglyana Pathva</button>
+
+<div id="linkBox" class="linkBox">
+<b>✅ Link Copy Karun WhatsApp la Taka:</b><br><br>
+<textarea id="linkText" style="width:100%;height:70px;font-size:11px"></textarea><br>
+<button class="btn btn-whatsapp" onclick="copyLink()">📋 Copy Link</button>
+<button class="btn btn-green" onclick="shareWhatsApp()">📲 WhatsApp Share</button>
+</div>
+</div>
+</div>
+
+</div>
+
+<script>
+function getDataFromURL(){
+  try{
+    let hash=window.location.hash.substring(1);
+    if(hash){ return JSON.parse(atob(hash)); }
+  }catch(e){}
+  return null;
+}
+let urlData=getDataFromURL();
+let data = urlData || JSON.parse(localStorage.getItem("mauliSaveBtn") || `{
+  "weeks":["16 Feb","23 Feb","2 Mar","9 Mar","16 Mar","23 Mar","30 Mar","6 Apr","13 Apr","20 Apr","27 Apr","4 May","11 May","18 May","25 May","1 Jun","8 Jun","15 Jun","22 Jun","29 Jun","6 Jul","13 Jul","20 Jul","27 Jul","3 Aug","10 Aug","17 Aug","24 Aug","31 Aug","7 Sep","19 Oct"],
+  "members":[
+    {"name":"Praful","kadhaleli":0,"paid":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]},
+    {"name":"Rohant","kadhaleli":0,"paid":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]},
+    {"name":"Prashant","kadhaleli":500,"paid":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]},
+    {"name":"Bhavesh","kadhaleli":0,"paid":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]},
+    {"name":"Samarth","kadhaleli":0,"paid":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]},
+    {"name":"Prasad","kadhaleli":1000,"paid":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]},
+    {"name":"Tejas","kadhaleli":0,"paid":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]},
+    {"name":"Ganesh","kadhaleli":0,"paid":[true,true,true,true,true,true,true,true,true,true,true,true,true,true,true]}
+  ]
+}`);
+
+function saveLocal(){ localStorage.setItem("mauliSaveBtn", JSON.stringify(data)); render(); }
+function countPaid(m){ return m.paid.filter(p=>p).length; }
+
+function render(){
+  let totalJama=0, totalKad=0;
+  data.members.forEach(m=>{ totalJama+=countPaid(m)*50; totalKad+=m.kadhaleli; });
+  document.getElementById("head").textContent=`Ravivar: ${data.weeks.length} | Jama ₹${totalJama} | Kadhalela ₹${totalKad} | Shillak ₹${totalJama-totalKad}`;
+
+  let html=`<tr><th>No</th><th>Member</th><th>Bharlele</th><th>Bharleli</th><th>Kadhalela</th><th>Shillak</th></tr>`;
+  data.members.forEach((m,i)=>{
+    let pc=countPaid(m); let bhar=pc*50;
+    html+=`<tr><td>${i+1}</td><td><b>${m.name}</b></td><td>${pc}/${data.weeks.length}</td><td>₹${bhar}</td><td style="background:#ffebee;color:red;font-weight:bold;font-size:13px">₹${m.kadhaleli}</td><td style="color:${bhar-m.kadhaleli>=0?'green':'red'};font-weight:bold">₹${bhar-m.kadhaleli}</td></tr>`;
+  });
+  html+=`<tr class="total"><td colspan="3">TOTAL</td><td>₹${totalJama}</td><td>₹${totalKad}</td><td>₹${totalJama-totalKad}</td></tr>`;
+  document.getElementById("mainTbl").innerHTML=html;
+  document.getElementById("bJama").innerHTML=`JAMA<br>₹${totalJama}`;
+  document.getElementById("bKad").innerHTML=`KADHALELA<br>₹${totalKad}`;
+  document.getElementById("bShillak").innerHTML=`SHILLAK<br>₹${totalJama-totalKad}`;
+
+  let weekHtml=`<tr><th>Ravivar</th>`; data.members.forEach(m=>weekHtml+=`<th>${m.name}</th>`); weekHtml+=`<th>Total</th></tr>`;
+  data.weeks.forEach((w,wi)=>{
+    weekHtml+=`<tr><td><b>${wi+1}. ${w}</b></td>`;
+    let tot=0;
+    data.members.forEach((m,mi)=>{
+      let isPaid=m.paid[wi]||false; if(isPaid) tot++;
+      weekHtml+=`<td class="${isPaid?'paid':'unpaid'}"><input type="checkbox" ${isPaid?'checked':''} onchange="togglePaid(${mi},${wi},this.checked)" ${document.getElementById("adminControls").style.display=="none"?"disabled":""} style="width:18px;height:18px"></td>`;
+    });
+    weekHtml+=`<td><b>${tot}/8</b></td></tr>`;
+  });
+  document.getElementById("weekTbl").innerHTML=weekHtml;
+
+  let kadHTML="";
+  data.members.forEach((m,i)=>{
+    let pc=countPaid(m);
+    kadHTML+=`<div class="kad-card">
+      <div><b>${m.name}</b> | Bharle: ${pc} | ₹${pc*50} | Shillak: ₹${pc*50-m.kadhaleli}</div>
+      <div>
+        <input id="input-${i}" type="number" value="${m.kadhaleli}" class="kad-input" placeholder="Kadhalela Rs">
+        <button class="save-btn" onclick="saveOne(${i})">💾 Save</button>
+      </div>
+    </div>`;
+  });
+  document.getElementById("kadInputs").innerHTML=kadHTML;
+}
+
+function unlock(){ if(document.getElementById("pass").value=="1234"){ document.getElementById("adminControls").style.display="block"; render(); alert("Unlock! Aata amount taka ani Save daba!"); } else alert("Password 1234"); }
+
+function saveOne(i){
+  let el=document.getElementById(`input-${i}`);
+  let amt=parseInt(el.value||0);
+  data.members[i].kadhaleli=amt;
+  saveLocal();
+  // Button feedback
+  el.style.background="#c8e6c9";
+  setTimeout(()=>el.style.background="#ffebee",800);
+  alert(`${data.members[i].name} cha Kadhalela ₹${amt} Save Zala! ✅`);
+}
+
+function saveAll(){
+  data.members.forEach((m,i)=>{
+    let el=document.getElementById(`input-${i}`);
+    if(el) m.kadhaleli=parseInt(el.value||0);
+  });
+  saveLocal();
+  alert("Sagle Kadhalele Save Zale! ✅");
+}
+
+function togglePaid(mi,wi,checked){ data.members[mi].paid[wi]=checked; saveLocal(); }
+
+function addRavivar(){
+  let d=prompt("Nava Ravivar date (Ud. 26 Oct):","26 Oct");
+  if(!d) return;
+  data.weeks.push(d);
+  data.members.forEach(m=>m.paid.push(false));
+  saveLocal();
+}
+
+function generateLink(){
+  saveAll();
+  let hash=btoa(JSON.stringify(data));
+  let base=window.location.href.split('#')[0];
+  document.getElementById("linkBox").style.display="block";
+  document.getElementById("linkText").value=base+"#"+hash;
+}
+function copyLink(){ let t=document.getElementById("linkText"); t.select(); document.execCommand("copy"); alert("Link Copy Zala!"); }
+function shareWhatsApp(){
+  let link=document.getElementById("linkText").value;
+  window.open(`https://wa.me/?text=*Mauli Sangh*%0A${encodeURIComponent(link)}`,'_blank');
+}
+
+render();
+</script>
+</body>
+</html>
